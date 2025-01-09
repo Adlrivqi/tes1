@@ -33,7 +33,7 @@ number_bathroom = st.sidebar.number_input("Jumlah Kamar Mandi", min_value=0, val
 location = st.sidebar.selectbox("Lokasi", data['location'].unique())
 area_m2 = st.sidebar.number_input("Area (m2)", min_value=0, value=100)
 type_property = st.sidebar.selectbox("Tipe Properti", data['type'].unique())
-unit_price_rm_m2 = st.sidebar.number_input("Harga per m2 (RM)", min_value=0, value=5000)
+unit_price_rm_m2 = st.sidebar.number_input("Harga per m2 (Rp)", min_value=0, value=5000)
 
 # Map inputs to encoded values
 location_encoded = data.loc[data['location'] == location, 'location_encoded'].iloc[0]
