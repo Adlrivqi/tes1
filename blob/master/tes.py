@@ -1,13 +1,6 @@
-pip install streamlit
-pip install scikit-learn
-
 import streamlit as st
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import Ridge
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error, r2_score
 
 # Title and description
 st.title("Prediksi Harga Tawar Properti di Malaysia")
@@ -56,26 +49,32 @@ y = data['list_price'].values
 X = np.nan_to_num(X, nan=0.0, posinf=0.0, neginf=0.0)
 y = np.nan_to_num(y, nan=0.0, posinf=0.0, neginf=0.0)
 
-# Scale features
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
+# Manually scale features
+mean = X.mean(axis=0)
+std = X.std(axis=0)
+X_scaled = (X - mean) / std
 
-# Split data into training and test sets
-X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+# Split data into training and test sets (80/20 split)
+split_index = int(0.8 * len(X))
+X_train, X_test = X_scaled[:split_index], X_scaled[split_index:]
+y_train, y_test = y[:split_index], y[split_index:]
 
-# Train model using Ridge Regression for stability
-ridge = Ridge(alpha=1.0)
-ridge.fit(X_train, y_train)
+# Train Ridge Regression model manually
+# We need to compute the Ridge regression coefficients using the normal equation
+lambda_ = 1.0  # Regularization parameter (alpha in Ridge regression)
+X_train_with_intercept = np.c_[np.ones(X_train.shape[0]), X_train]  # Add intercept term (bias)
+theta = np.linalg.inv(X_train_with_intercept.T @ X_train_with_intercept + lambda_ * np.eye(X_train_with_intercept.shape[1])) @ X_train_with_intercept.T @ y_train
 
 # Predict on both training and test data
-y_train_pred = ridge.predict(X_train)
-y_test_pred = ridge.predict(X_test)
+X_test_with_intercept = np.c_[np.ones(X_test.shape[0]), X_test]
+y_train_pred = X_train_with_intercept @ theta
+y_test_pred = X_test_with_intercept @ theta
 
 # Calculate evaluation metrics
-train_r2 = r2_score(y_train, y_train_pred)
-test_r2 = r2_score(y_test, y_test_pred)
-train_mse = mean_squared_error(y_train, y_train_pred)
-test_mse = mean_squared_error(y_test, y_test_pred)
+train_r2 = 1 - ((y_train - y_train_pred) ** 2).sum() / ((y_train - y_train.mean()) ** 2).sum()
+test_r2 = 1 - ((y_test - y_test_pred) ** 2).sum() / ((y_test - y_test.mean()) ** 2).sum()
+train_mse = ((y_train - y_train_pred) ** 2).mean()
+test_mse = ((y_test - y_test_pred) ** 2).mean()
 
 # Display evaluation results
 # st.subheader("Akurasi Model")
@@ -88,9 +87,10 @@ test_mse = mean_squared_error(y_test, y_test_pred)
 user_input = np.array([
     number_bedroom, number_bathroom, location_encoded, area_m2, type_encoded, unit_price_rm_m2
 ]).reshape(1, -1)
-user_input_scaled = scaler.transform(user_input)
+user_input_scaled = (user_input - mean) / std  # Scale user input
+user_input_with_intercept = np.c_[np.ones(user_input_scaled.shape[0]), user_input_scaled]
 
-estimated_price = ridge.predict(user_input_scaled)
+estimated_price = user_input_with_intercept @ theta
 
 # Display result
 st.subheader("Estimasi Harga")
