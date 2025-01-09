@@ -7,19 +7,17 @@ st.title("Prediksi Harga Tawar Properti di Malaysia")
 st.write("Aplikasi ini membantu memprediksi harga properti berdasarkan parameter yang Anda masukkan.")
 
 # Load and preprocess data
-@st.cache_data
 def load_data():
-    dataset = pd.read_csv('/tes1/blob/master/malaysia_property_for_sale.csv')
-    
+    dataset = pd.read_csv('malaysia_property_for_sale.csv')  # Adjust path if necessary
     # Data cleaning
     dataset['list_price'] = dataset['list_price'].str.replace('RM', '').str.replace(',', '').astype(float)
     dataset['unit_price'] = dataset['unit_price'].str.replace('RM', '').str.replace(',', '').str.replace('/ m2', '').str.replace('(', '').str.replace(')', '').astype(float)
     dataset['area'] = dataset['area'].str.replace(' m2', '').str.replace(',', '').astype(float)
-    
+ 
     # Encoding
     dataset['location_encoded'] = dataset['location'].astype('category').cat.codes
     dataset['type_encoded'] = dataset['type'].astype('category').cat.codes
-    
+ 
     return dataset
 
 data = load_data()
