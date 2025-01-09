@@ -9,7 +9,7 @@ st.write("Aplikasi ini membantu memprediksi harga properti berdasarkan parameter
 # Load and preprocess data
 @st.cache_data
 def load_data():
-    dataset = pd.read_csv('malaysia_property_for_sale.csv')
+    dataset = pd.read_csv('/tes1/blob/master/malaysia_property_for_sale.csv')
     
     # Data cleaning
     dataset['list_price'] = dataset['list_price'].str.replace('RM', '').str.replace(',', '').astype(float)
